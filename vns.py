@@ -4,9 +4,10 @@ import numpy as np
 import random
 
 class VNS:
-    def __init__(self, second_elapsed, fitness_function):
+    def __init__(self, second_elapsed, fitness_function, is_greater_better):
         self.MAX_ELAPSED = timedelta(seconds=second_elapsed)
         self.fitness_function = fitness_function
+        self.is_greater_better = is_greater_better
 
     def n1(self, l, min_index = None, max_index = None):
         if not isinstance(l, list): # Parameter l hanya boleh diisi list
@@ -72,7 +73,7 @@ class VNS:
         l[min], l[max] = l[max], l[min] # Nilai di kedua index ditukar
         return l
 
-    def vns(self,agent):
+    def vns(self, agent):
         start_timestamp = datetime.now()
         agent_ = None
         elapsed = datetime.now() - start_timestamp
@@ -91,11 +92,19 @@ class VNS:
 
                 fitness_value_agent_ = self.fitness_function(agent_)
 
-                # jika agent_ lebih baik dari agen saat ini
-                if fitness_value_agent_ > fitness_value_agent:
-                    agent = agent_
-                    k = 1
-                else: # jika agent_ tidak lebih baik dari agen saat ini
-                    k += 1
+                if self.is_greater_better:
+                    # jika agent_ lebih baik dari agen saat ini
+                    if fitness_value_agent_ > fitness_value_agent:
+                        agent = agent_
+                        k = 1
+                    else:  # jika agent_ tidak lebih baik dari agen saat ini
+                        k += 1
+                else:
+                    # jika agent_ lebih baik dari agen saat ini
+                    if fitness_value_agent_ < fitness_value_agent:
+                        agent = agent_
+                        k = 1
+                    else:  # jika agent_ tidak lebih baik dari agen saat ini
+                        k += 1
             elapsed = datetime.now() - start_timestamp
         return agent_

@@ -347,7 +347,7 @@ class WOA_VNS_VRP(WOA_VRP):
 
     def WOA(self, min_x, max_x, agents):
         # setup VNS
-        vns = VNS(1, self.fitness_function)
+        vns = VNS(1, self.fitness_function, True)
 
         t = 0
 
