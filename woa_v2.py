@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from provider.dataset_provider import DatasetProvider
+from vns import VNS
 
 import copy
 import random
@@ -338,3 +339,90 @@ class WOA_VRP:
             })
 
         return output['results'] , Fbest
+
+
+class WOA_VNS_VRP(WOA_VRP):
+    def __init__(self, ids, hotel_id, doi_duration, doi_cost, doi_rating, days_count):
+        super().__init__(ids, hotel_id, doi_duration, doi_cost, doi_rating, days_count)
+
+    def WOA(self, min_x, max_x, agents):
+        # setup VNS
+        vns = VNS(1, self.fitness_function)
+
+        t = 0
+
+        # Fbest : nilai fitness terbaik
+        # Xbest : agen terbaik
+        Fbest, Xbest = self.get_best_agent(agents)
+        agent_dimension = int(len(Xbest) / self.DAYS_COUNT) # banyak tempat wisata sesuai preferensi user
+        fitness_values = []
+
+        # Menyimpan nilai fitness untuk setiap agen
+        for i in range(len(agents)):
+            fitness_values.append(self.fitness_function(agents[i]))
+
+        # print("Initial best fitness = %.5f" % Fbest)
+        while t < self.MAX_ITERATIONS:
+
+            a = 2 * (1 - t / self.MAX_ITERATIONS)
+            a2 = -1 + t * ((-1)/self.MAX_ITERATIONS)
+
+            i = 0
+            for agent in agents:
+                A = 2 * a * random.random() - a
+                C = 2 * random.random()
+                b = 1
+                l = (a2-1)*random.random()+1
+
+                D = [0.0 for k in range(agent_dimension)]
+                D1 = [0.0 for k in range(agent_dimension)]
+                Xnew = [0.0 for k in range(agent_dimension)]
+                Xrand = [0.0 for k in range(agent_dimension)]
+                p = random.random()
+                r = random.random()
+
+                if p < 0.5:
+                    if abs(a) >= 1: # search for prey
+                        p = random.randint(0, self.AGENT_COUNT-1)
+                        while (p==i):
+                            p = random.randint(0, self.AGENT_COUNT-1)
+
+                        Xrand = agents[p]
+
+                        for j in range(agent_dimension):
+                            D[j] = abs(C * Xrand[j] - agent[j])
+                            Xnew[j] = Xrand[j] - A * D[j]
+                    else: # encircling prey
+                        if r < 0.5:
+                            for j in range(agent_dimension):
+                                D[j] = abs(C * Xrand[j] - agent[j])
+                                Xnew[j] = Xrand[j] - A * D[j]
+                        else:
+                            Xnew = vns.vns(agent)
+                else: # bubble net attacking
+                    if r < 0.5:
+                        for j in range(agent_dimension):
+                            D1[j] = abs(Xbest[j] - agent[j])
+                            Xnew[j] = D1[j] * math.exp(b * l) * math.cos(2 * math.pi * l) + Xbest[j]
+                    else:
+                        Xnew = vns.vns(agent)
+
+                for j in range(agent_dimension):
+                    agent[j] = Xnew[j]
+                i += 1
+
+            for i in range(len(agents)):
+                # jika Xnew < minx atau Xnew > maxx
+                for j in range(agent_dimension):
+                    agents[i][j] = max(agents[i][j], min_x)
+                    agents[i][j] = min(agents[i][j], max_x)
+
+                fitness_values[i] = self.fitness_function(agents[i])
+
+                if (fitness_values[i] > Fbest):
+                    Xbest = copy.copy(agents[i])
+                    Fbest = fitness_values[i]
+
+            # print("Iteration = " + str(t) + " | best fitness = %.5f" % Fbest)
+            t += 1
+        return Xbest, Fbest

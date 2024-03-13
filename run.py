@@ -1,7 +1,7 @@
 from aco import ACO_VRP,ACO_TSP
 from acs import ACS_VRP,ACS_TSP
-from woa import WOA_TSP, WOA_VNS_VRP, WOA_VNS_TSP
-from woa_v2 import WOA_VRP
+from woa import WOA_TSP, WOA_VNS_TSP
+from woa_v2 import WOA_VRP, WOA_VNS_VRP
 from koneksi import ConDB
 import matplotlib.pyplot as plt
 import random
