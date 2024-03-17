@@ -1,7 +1,6 @@
 from aco import ACO_VRP,ACO_TSP
 from acs import ACS_VRP,ACS_TSP
-from woa import WOA_TSP, WOA_VNS_TSP
-from woa_v2 import WOA_VRP, WOA_VNS_VRP
+from woa_v2 import WOA_VRP, WOA_VNS_VRP, WOA_TSP, WOA_VNS_TSP
 from koneksi import ConDB
 import matplotlib.pyplot as plt
 import random
@@ -52,7 +51,7 @@ def main(tourid, idhotel, dwaktu, drating, dtarif, travel_days, algorithm):
                             degree_tarif=dtarif, degree_rating=drating)
         solution, fitness = aco_model.construct_solution()
     elif algorithm == "ant-colony-system-acs-vrp":
-        acs_model = ACS_TSP()
+        acs_model = ACS_VRP()
         acs_model.set_model(tur, hotel, timematrix, travel_days, depart_time, max_travel_time, degree_waktu=dwaktu,
                             degree_tarif=dtarif, degree_rating=drating)
         solution, fitness = acs_model.construct_solution()
